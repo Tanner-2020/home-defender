@@ -24,7 +24,7 @@ To get GBDK 2020 and to view official documentation, please visit:
 https://gbdk-2020.github.io/gbdk-2020/docs/api/
 
 For helpful tutorials on how to get started in GBDK, check out the GamingMonsters YouTube Playlist:
-https://www.youtube.com/playlist?list=PLeEj4c2zF7PaFv5MPYhNAkBGrkx4iPGJo
+https://www.youtube.com/playlist?list=PLeEj4c2zF7PaFv5MPYhNAkBGrkx4iPGJo --- 
 Note: Many of the tutorials are for the old version of GBDK, for a breif overview of the updated version, check the last video first.
 
 The emulator I recommend for testing the functionality of GameBoy games is BGB because of its variety of options, such as the VRAM Viewer:
