@@ -19,9 +19,12 @@ the game was started.
 - Select: (BGB: Shift) - End gameplay early (Sets health to 0)
 - D-Pad: (BGB: Arrow keys) - Select menu option (up/down)/Move spaceship (left/right)
 
-### Resources
+## Resources
 To get GBDK 2020 and to view official documentation, please visit:
 https://gbdk-2020.github.io/gbdk-2020/docs/api/
+
+For editing and creating sprites and backgrounds, please use th updated GBTD 2020 (GameBoy Tile Designer 2020)
+and GBMB 2020 (GameBoy Map Builder 2020), which can be found here: https://github.com/gbdk-2020/GBTD_GBMB
 
 For helpful tutorials on how to get started in GBDK, check out the GamingMonsters YouTube Playlist:
 https://www.youtube.com/playlist?list=PLeEj4c2zF7PaFv5MPYhNAkBGrkx4iPGJo --- 
