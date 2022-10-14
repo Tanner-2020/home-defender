@@ -13,8 +13,8 @@ GameBoy hardware, as well as on the GameBoy Advance and emulators, such as BGB.
 the game was started.
 
 ## Controls
-A-Button: (BGB: S) - Select menu options/fire standard blasters
-B-Button: (BGB: A) - Go back through menus/fire large missile (1 per 30 seconds)
-Start: (BGB: Enter) - Progress past start screen/pause gameplay
-Select: (BGB: Shift) - End gameplay early (Sets health to 0)
-D-Pad: (BGB: Arrow keys) - Select menu option (up/down)/Move spaceship (left/right)
+- A-Button: (BGB: S) - Select menu options/fire standard blasters
+- B-Button: (BGB: A) - Go back through menus/fire large missile (1 per 30 seconds)
+- Start: (BGB: Enter) - Progress past start screen/pause gameplay
+- Select: (BGB: Shift) - End gameplay early (Sets health to 0)
+- D-Pad: (BGB: Arrow keys) - Select menu option (up/down)/Move spaceship (left/right)
