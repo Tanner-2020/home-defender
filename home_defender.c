@@ -22,6 +22,7 @@
 #include "start_data.c"
 #include "start_map.c"
 #include "sprite.c"
+#include "sprite_sheet.c"
 #include "bkg_sprites.c"
 #include "menu_screen.c"
 #include "stats_screen.c"
@@ -39,6 +40,54 @@ void performanceDelay(uint8_t num){
     }
 }
 
+
+void fadeOut(){
+    uint8_t i;
+    for(i = 0; i < 4; i++){
+        switch(i){
+            case 0:
+                BGP_REG = 0xE4;
+                break;
+            case 1:
+                BGP_REG = 0xF9;
+                break;
+            case 2:
+                BGP_REG = 0xFE;
+                break;
+            case 3:
+                BGP_REG = 0xFF;
+                break;
+        }
+        performanceDelay(3);
+    }
+}
+
+
+void fadeIn(){
+    uint8_t i;
+    for(i = 0; i < 3; i++){
+        switch(i){
+            case 0:
+                BGP_REG = 0xFE;
+                break;
+            case 1:
+                BGP_REG = 0xF9;
+                break;
+            case 2:
+                BGP_REG = 0xE4;
+                break;
+        }
+        performanceDelay(3);
+    }
+}
+
+
+void fadeTransition(uint8_t num, char* data, char* tiles){
+    fadeOut();
+    set_bkg_data(0, num, data);
+    set_bkg_tiles(0, 0, 20, 18, tiles);
+    fadeIn();
+}
 
 void playSounds(uint8_t soundVal){
     if(soundVal == 0){
@@ -124,6 +173,68 @@ void startScreen(){
     performanceDelay(4);
 }
 
+
+void menuSelection(){
+    uint8_t selection;
+    uint8_t cursorPos;
+    fadeTransition(97, bkg, menu_screen);
+
+    set_sprite_data(0, 19, sprites);
+    set_sprite_tile(0, 1);
+    move_sprite(0, 40, 48);
+
+    SHOW_SPRITES;
+
+    selection = 0;
+    cursorPos = 0;
+
+    while(selection != 3){
+
+        if(joypad() & J_DOWN){
+            cursorPos++;
+            if(cursorPos > 1){ cursorPos = 0; }
+            playSounds(1);
+            move_sprite(0, 40, 48 + (cursorPos*16));
+            performanceDelay(10);
+        }
+        if(joypad() & J_UP){
+            cursorPos--;
+            if(cursorPos > 1){ cursorPos = 1; }
+            playSounds(1);
+            move_sprite(0, 40, 48+(cursorPos*16));
+            performanceDelay(10);
+        }
+        if(joypad() & J_B){
+            playSounds(2);
+            selection = 3;
+        }
+        if(joypad() & J_A){
+            playSounds(0);
+            if(cursorPos == 0){ selection = 1; }
+            if(cursorPos == 1){ selection = 2; }
+        }
+
+        if(selection != 0 && selection != 3){
+            move_sprite(0, 0, 0);
+            if(selection == 1){
+                numplays++;
+                //playGame();
+                //displayStats();
+            }
+            if(selection == 2){
+                //displayStats();
+            }
+            set_sprite_data(0, 19, sprites);
+            set_sprite_tile(0, 1);
+            move_sprite(0, 40, 48);
+            cursorPos = 0;
+            selection = 0;
+            performanceDelay(10);
+        }
+        if(selection == 3){ move_sprite(0, 0, 0); }
+    }
+}
+
 void main(){
 
     //Enable Sound Profile
@@ -145,8 +256,8 @@ void main(){
         seed |= (uint16_t)DIV_REG << 8;
         initarand(seed);
 
-        //menuSelection();
+        menuSelection();
 
-        //fadeTransition();
+        fadeTransition(172, start_data, start_map);
     }
 }
