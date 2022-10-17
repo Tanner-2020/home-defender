@@ -173,6 +173,36 @@ void startScreen(){
     performanceDelay(4);
 }
 
+void displayStats(){
+    uint8_t numPlaysKeeper[3];
+    uint16_t playsKeeper;
+    uint16_t remainder;
+
+    fadeOut();
+    set_bkg_tiles(0, 0, 20, 18, stats_screen);
+    move_bkg(0, 0);
+    //printScore(0, 0);
+    //printScore(0, 1);
+
+    playsKeeper = numplays;
+    numPlaysKeeper[0] = 1 + (playsKeeper/100);
+    remainder = playsKeeper - ((playsKeeper/100)*100);
+    playsKeeper = remainder;
+    numPlaysKeeper[1] = 1 + (playsKeeper/10);
+    remainder = playsKeeper - ((playsKeeper/10)*10);
+    numPlaysKeeper[2] = 1 + (numplays %10);
+    set_bkg_tiles(6, 14, 3, 1, numPlaysKeeper);
+
+    HIDE_WIN;
+    fadeIn();
+
+    waitpad(J_B);
+
+    playSounds(2);
+    fadeTransition(97, bkg, menu_screen);
+
+}
+
 
 void menuSelection(){
     uint8_t selection;
@@ -219,10 +249,10 @@ void menuSelection(){
             if(selection == 1){
                 numplays++;
                 //playGame();
-                //displayStats();
+                displayStats();
             }
             if(selection == 2){
-                //displayStats();
+                displayStats();
             }
             set_sprite_data(0, 19, sprites);
             set_sprite_tile(0, 1);
