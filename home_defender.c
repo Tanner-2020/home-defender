@@ -27,10 +27,57 @@
 #include "menu_screen.c"
 #include "stats_screen.c"
 #include "game_screen.c"
+#include "hud.c"
 
 
 // Global Variables
 uint8_t numplays;
+uint8_t hiScore;
+uint8_t currScore;
+
+// Sprites
+sprite maverick;
+sprite bolt1;
+sprite bolt2;
+sprite missile;
+sprite asteroid1;
+sprite asteroid2;
+
+
+void setUpSprites(){
+
+    //Player
+    set_sprite_tile(0, 2);
+    maverick.spriteIDs[0] = 0;
+    set_sprite_tile(1, 3);
+    maverick.spriteIDs[1] = 1;
+    set_sprite_tile(2, 4);
+    maverick.spriteIDs[2] = 2;
+    set_sprite_tile(3, 5);
+    maverick.spriteIDs[3] = 3;
+    maverick.x = 0;
+    maverick.y = 0;
+    maverick.width = 16;
+    maverick.height = 16;
+    maverick.hp = 3;
+    maverick.speed = 4;
+}
+
+
+void moveSprites(sprite* object, uint8_t x, uint8_t y){
+    move_sprite(object->spriteIDs[0], object->x + x, object->y + y);
+    if(object->width == 16){
+        move_sprite(object->spriteIDs[1], object->x + 8 + x, object->y + y);
+    }
+    if(object->height == 16){
+        move_sprite(object->spriteIDs[2], object->x + x, object->y + 8 + y);
+    }
+    if(object->width == 16 && object->height == 16){
+        move_sprite(object->spriteIDs[3], object->x + 8 + x, object->y + 8 + y);
+    }
+    object->x += x;
+    object->y += y;
+}
 
 
 void performanceDelay(uint8_t num){
@@ -88,6 +135,7 @@ void fadeTransition(uint8_t num, char* data, char* tiles){
     set_bkg_tiles(0, 0, 20, 18, tiles);
     fadeIn();
 }
+
 
 void playSounds(uint8_t soundVal){
     if(soundVal == 0){
@@ -173,6 +221,50 @@ void startScreen(){
     performanceDelay(4);
 }
 
+
+void playGame(){
+    uint8_t earthHealth = 100;
+    currScore = 0;
+    UBYTE earthHit = 0;
+    uint8_t blastDelay = 10;
+    uint16_t missileDelay = 900;
+    uint8_t life = 3;
+
+    //Specialized Fade Transition to Game (Includes background offset)
+    fadeOut();
+    set_bkg_tiles(0, 0, 28, 18, game_screen);
+    move_bkg(32, 0);
+    set_win_data(0, 97, bkg);
+    set_win_tiles(0, 0, 20, 1, hud);
+    move_win(8, 134);
+    SHOW_WIN;
+    setUpSprites();
+    moveSprites(&maverick, 80, 100);
+    fadeIn();
+
+    while(earthHealth > 0 && life < 4){
+        if(joypad() & J_LEFT && maverick.x > 9){
+            moveSprites(&maverick, -(maverick.speed), 0);
+        }
+        if (joypad() & J_RIGHT && maverick.x < 151){
+            moveSprites(&maverick, maverick.speed, 0);
+        }
+        if(joypad() & J_SELECT){
+            life = 4;
+        }
+
+        performanceDelay(2);
+    }
+
+    if(currScore > hiScore){
+        hiScore = currScore;
+    }
+
+    waitpad(J_A);
+    //resetSprites();
+}
+
+
 void displayStats(){
     uint8_t numPlaysKeeper[3];
     uint16_t playsKeeper;
@@ -207,7 +299,7 @@ void displayStats(){
 void menuSelection(){
     uint8_t selection;
     uint8_t cursorPos;
-    fadeTransition(97, bkg, menu_screen);
+    fadeTransition(98, bkg, menu_screen);
 
     set_sprite_data(0, 19, sprites);
     set_sprite_tile(0, 1);
@@ -248,7 +340,7 @@ void menuSelection(){
             move_sprite(0, 0, 0);
             if(selection == 1){
                 numplays++;
-                //playGame();
+                playGame();
                 displayStats();
             }
             if(selection == 2){
@@ -264,6 +356,7 @@ void menuSelection(){
         if(selection == 3){ move_sprite(0, 0, 0); }
     }
 }
+
 
 void main(){
 
