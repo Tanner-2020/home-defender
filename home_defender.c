@@ -86,6 +86,18 @@ void setUpSprites(){
     shot2.hp = 1;
     shot2.speed = 5;
 
+    // Missile
+    set_sprite_tile(8, 10);
+    missile.spriteIDs[0] = 8;
+    set_sprite_tile(9, 11);
+    missile.spriteIDs[2] = 9;
+    missile.x = 0;
+    missile.y = 0;
+    missile.width = 8;
+    missile.height = 16;
+    missile.hp = 3;
+    missile.speed = 2;
+
 }
 
 
@@ -120,6 +132,11 @@ void resetSprites(){
     shot2.x = 0;
     shot2.y = 0;
     moveSprites(&shot2, 0, 0);
+
+    // Missile
+    missile.x = 0;
+    missile.y = 0;
+    moveSprites(&missile, 0, 0);
 }
 
 
@@ -302,6 +319,16 @@ void playGame(){
                 moveSprites(&shot2, maverick.x, maverick.y);
             }
         }
+        if(joypad() & J_B){
+            if(missileDelay == 900){
+                playSounds(4);
+                missileDelay = 0;
+                moveSprites(&missile, maverick.x + 4, maverick.y);
+            }
+            else if(missileDelay < 900 && missileDelay >= 50 && missileDelay % 3 == 0){
+                playSounds(6);
+            }
+        }
 
         // Temporary Test Function
         if(joypad() & J_SELECT){
@@ -324,9 +351,24 @@ void playGame(){
                 moveSprites(&shot2, 0, 0);
             }
         }
+        if(missile.x != 0 && missile.y != 0){
+            moveSprites(&missile, 0, -(missile.speed));
+            if(missile.y == 0){
+                missile.x = 0;
+                missile.y = 0;
+                moveSprites(&missile, 0, 0);
+            }
+        }
 
         if(blastDelay < 10){
             blastDelay++;
+        }
+
+        if(missileDelay < 900){
+            missileDelay++;
+            if(missileDelay == 900){
+                playSounds(5);
+            }
         }
         performanceDelay(2);
     }
