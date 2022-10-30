@@ -37,8 +37,8 @@ uint8_t currScore;
 
 // Sprites
 sprite maverick;
-sprite bolt1;
-sprite bolt2;
+sprite shot1;
+sprite shot2;
 sprite missile;
 sprite asteroid1;
 sprite asteroid2;
@@ -46,7 +46,7 @@ sprite asteroid2;
 
 void setUpSprites(){
 
-    //Player
+    // Player
     set_sprite_tile(0, 2);
     maverick.spriteIDs[0] = 0;
     set_sprite_tile(1, 3);
@@ -61,6 +61,31 @@ void setUpSprites(){
     maverick.height = 16;
     maverick.hp = 3;
     maverick.speed = 4;
+
+    // Shot 1
+    set_sprite_tile(4, 6);
+    shot1.spriteIDs[0] = 4;
+    set_sprite_tile(5, 7);
+    shot1.spriteIDs[1] = 5;
+    shot1.x = 0;
+    shot1.y = 0;
+    shot1.width = 16;
+    shot1.height = 8;
+    shot1.hp = 1;
+    shot1.speed = 5;
+
+    // Shot 2
+    set_sprite_tile(6, 8);
+    shot2.spriteIDs[0] = 6;
+    set_sprite_tile(7, 9);
+    shot2.spriteIDs[1] = 7;
+    shot2.x = 0;
+    shot2.y = 0;
+    shot2.width = 16;
+    shot2.height = 8;
+    shot2.hp = 1;
+    shot2.speed = 5;
+
 }
 
 
@@ -77,6 +102,24 @@ void moveSprites(sprite* object, uint8_t x, uint8_t y){
     }
     object->x += x;
     object->y += y;
+}
+
+
+void resetSprites(){
+    // Player
+    maverick.x = 0;
+    maverick.y = 0;
+    moveSprites(&maverick, 0, 0);
+
+    // Shot 1
+    shot1.x = 0;
+    shot1.y = 0;
+    moveSprites(&shot1, 0, 0);
+
+    // Shot 2
+    shot2.x = 0;
+    shot2.y = 0;
+    moveSprites(&shot2, 0, 0);
 }
 
 
@@ -246,13 +289,45 @@ void playGame(){
         if(joypad() & J_LEFT && maverick.x > 9){
             moveSprites(&maverick, -(maverick.speed), 0);
         }
-        if (joypad() & J_RIGHT && maverick.x < 151){
+        if(joypad() & J_RIGHT && maverick.x < 151){
             moveSprites(&maverick, maverick.speed, 0);
         }
+        if(joypad() & J_A && blastDelay == 10){
+            playSounds(3);
+            blastDelay = 0;
+            if((shot1.x == 0 && shot1.y == 0)||(shot1.x != 0 && shot2.y != 0)){
+                moveSprites(&shot1, maverick.x, maverick.y);
+            }
+            else{
+                moveSprites(&shot2, maverick.x, maverick.y);
+            }
+        }
+
+        // Temporary Test Function
         if(joypad() & J_SELECT){
             life = 4;
         }
 
+        if(shot1.x != 0 && shot1.y != 0){
+            moveSprites(&shot1, 0, -(shot1.speed));
+            if(shot1.y == 0){
+                shot1.x = 0;
+                shot1.y = 0;
+                moveSprites(&shot1, 0, 0);
+            }
+        }
+        if(shot2.x != 0 && shot2.y != 0){
+            moveSprites(&shot2, 0, -(shot2.speed));
+            if(shot2.y == 0){
+                shot2.x = 0;
+                shot2.y = 0;
+                moveSprites(&shot2, 0, 0);
+            }
+        }
+
+        if(blastDelay < 10){
+            blastDelay++;
+        }
         performanceDelay(2);
     }
 
@@ -261,7 +336,7 @@ void playGame(){
     }
 
     waitpad(J_A);
-    //resetSprites();
+    resetSprites();
 }
 
 
@@ -288,7 +363,7 @@ void displayStats(){
     HIDE_WIN;
     fadeIn();
 
-    waitpad(J_B);
+    waitpad(J_A);
 
     playSounds(2);
     fadeTransition(97, bkg, menu_screen);
