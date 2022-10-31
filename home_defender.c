@@ -299,6 +299,11 @@ void playSounds(uint8_t soundVal){
     }
     if(soundVal == 7){
         // Sound for Asteroid Destruction within Game.
+        NR10_REG = 0x15;
+        NR11_REG = 0xC0;
+        NR12_REG = 0x24;
+        NR13_REG = 0x73;
+        NR14_REG = 0x86;
         
     }
     if(soundVal == 8){
@@ -428,6 +433,7 @@ void checkCollisions(sprite *obj1, sprite *obj2, uint8_t *cooldown){
             }
             
             if(obj2->hp == 0){
+                playSounds(7);
                 *cooldown = 0;
                 obj2->x = 0;
                 obj2->y = 0;
@@ -661,10 +667,10 @@ void playGame(){
         if(currScore >= 500 && currScore < 1000){
             asteroid2.speed = 2;
         }
-        if(currScore >= 1000 && currScore < 2500){
+        if(currScore >= 1000 && currScore < 3300){
             asteroid1.speed = 2;
         }
-        if(currScore >= 2500 && currScore < 5000){
+        if(currScore >= 3300 && currScore < 5000){
             asteroid2.speed = 1;
         }
         if(currScore >= 5000){
