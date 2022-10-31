@@ -422,7 +422,6 @@ void checkCollisions(sprite *obj1, sprite *obj2, uint8_t *cooldown){
             }
             if(obj1->height == 16 && obj1->width == 16){
                 currScore += 5;
-                playSounds(7);
                 obj2->hp = 0;
                 obj1->x = 0;
                 lostLife = 1;
