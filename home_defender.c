@@ -36,6 +36,8 @@ uint8_t life;
 uint8_t earthHealth;
 uint16_t hiScore;
 uint16_t currScore;
+uint8_t quakeIter;
+UBYTE lostLife;
 
 // Sprites
 sprite maverick;
@@ -62,7 +64,7 @@ void setUpSprites(){
     maverick.width = 16;
     maverick.height = 16;
     maverick.hp = 3;
-    maverick.speed = 4;
+    maverick.speed = 3;
 
     // Shot 1
     set_sprite_tile(4, 6);
@@ -114,7 +116,7 @@ void setUpSprites(){
     asteroid1.width = 16;
     asteroid1.height = 16;
     asteroid1.hp = 3;
-    asteroid1.speed = 1;
+    asteroid1.speed = 3;
 
     // Asteroid 2
     set_sprite_tile(14, 16);
@@ -130,7 +132,7 @@ void setUpSprites(){
     asteroid2.width = 16;
     asteroid2.height = 16;
     asteroid2.hp = 3;
-    asteroid2.speed = 1;
+    asteroid2.speed = 3;
 }
 
 
@@ -297,7 +299,10 @@ void playSounds(uint8_t soundVal){
     }
     if(soundVal == 7){
         // Sound for Asteroid Destruction within Game.
-
+        NR41_REG = 0x3f;
+        NR42_REG = 0xB6;
+        NR43_REG = 0x6A;
+        NR44_REG = 0xC0;
     }
     if(soundVal == 8){
         // Sound for Asteroid Collision with Planet.
@@ -395,6 +400,104 @@ void updateWin(UBYTE destroyed){
 }
 
 
+void checkCollisions(sprite *obj1, sprite *obj2, uint8_t *cooldown){
+    if(obj1->x != 0 && obj1->y != 0){
+        if(((obj1->x >= obj2->x && obj1->x <= obj2->x+obj2->width) && (obj1->y >= obj2->y && obj1->y <= obj2->y+obj2->height)) ||
+        ((obj2->x >= obj1->x && obj2->x <= obj1->x+obj1->width) && (obj2->y >= obj1->y && obj2->y <= obj1->y+obj1->height))){
+            if(obj1->width < 16){
+                obj2->hp = 0;
+                currScore += 20;
+                obj1->x = 0;
+                obj1->y = 0;
+                moveSprites(obj1, 0, 0);
+                updateWin(0);
+            }
+            if(obj1-> height < 16){
+                currScore += 5;
+                obj2->hp = obj2->hp - obj1->hp;
+                obj1->x = 0;
+                obj1->y = 0;
+                moveSprites(obj1, 0, 0);
+                updateWin(0);
+            }
+            if(obj1->height == 16 && obj1->width == 16){
+                currScore += 5;
+                playSounds(7);
+                obj2->hp = 0;
+                obj1->x = 0;
+                lostLife = 1;
+                moveSprites(obj1, 80, 100);
+                updateWin(0);
+            }
+            
+            if(obj2->hp == 0){
+                playSounds(7);
+                *cooldown = 0;
+                obj2->x = 0;
+                obj2->y = 0;
+                obj2->hp = 3;
+                moveSprites(obj2, 0, 0);
+            }
+        }
+    }
+}
+
+void earthquake(UBYTE fin, UBYTE *earthHit){
+    if(fin == 0){
+        if(quakeIter == 0){
+            playSounds(8);
+        }
+        if(quakeIter == 0 || quakeIter == 12){
+            scroll_bkg(8,0);
+        }
+        if(quakeIter == 3 || quakeIter == 15){
+            scroll_bkg(-16,0);
+        }
+        if(quakeIter == 6 || quakeIter == 18){
+            scroll_bkg(16,0);
+        }
+        if(quakeIter == 9 || quakeIter == 21){
+            scroll_bkg(-8,0);
+        }
+        quakeIter++;
+        if(quakeIter >= 21){
+            scroll_bkg(-8,0);
+            quakeIter = 0;
+            *earthHit = 0;
+        }
+    }
+    else{
+        uint8_t quake;
+        for(quake = 0; quake < 22; quake++){
+            quakeIter = quake;
+
+            if(quakeIter == 0){
+                playSounds(8);
+            }
+            if(quakeIter == 0 || quakeIter == 12){
+                scroll_bkg(8,0);
+            }
+            if(quakeIter == 3 || quakeIter == 15){
+                scroll_bkg(-16,0);
+            }
+            if(quakeIter == 6 || quakeIter == 18){
+                scroll_bkg(16,0);
+            }
+            if(quakeIter == 9 || quakeIter == 21){
+                scroll_bkg(-8,0);
+            }
+            quakeIter++;
+            if(quakeIter >= 21){
+                scroll_bkg(0, 0);
+                quakeIter = 0;
+                earthHit = 0;
+            }
+            performanceDelay(2);
+        }
+    }
+}
+
+
 void startScreen(){
     SHOW_BKG;
 
@@ -408,12 +511,14 @@ void playGame(){
     earthHealth = 100;
     currScore = 0;
     UBYTE earthHit = 0;
+    lostLife = 0;
     uint8_t blastDelay = 10;
     uint16_t missileDelay = 900;
     life = 3;
     uint8_t a1Cooldown = 30;
     uint8_t a2Cooldown = 50;
     uint8_t difficulty = 0;
+    uint8_t clock = 0;
 
     //Specialized Fade Transition to Game (Includes background offset)
     fadeOut();
@@ -491,15 +596,16 @@ void playGame(){
             if(asteroid1.x == 0){
                 asteroid1.x = (rand()%148)+8;
             }
-            else if(asteroid1.x != 0 && asteroid1.y < 116){
-                moveSprites(&asteroid1, 0, asteroid1.speed);
+            else if(asteroid1.x != 0 && asteroid1.y < 116 && clock % asteroid2.speed == 0){
+                moveSprites(&asteroid1, 0, 2);
             }
-            else{
+            else if(asteroid1.y == 116){
                 a1Cooldown = 0;
                 earthHealth = earthHealth - 5;
                 updateWin(0);
                 asteroid1.x = 0;
                 asteroid1.y = 0;
+                earthHit = 1;
                 moveSprites(&asteroid1, 0, 0);
             }
         }
@@ -513,16 +619,17 @@ void playGame(){
                     asteroid2.x = spawn;
                 }
             }
-            else if(asteroid2.x != 0 && asteroid2.y < 116){
-                moveSprites(&asteroid2, 0, asteroid2.speed);
+            else if(asteroid2.x != 0 && asteroid2.y < 116 && clock % asteroid2.speed == 0){
+                moveSprites(&asteroid2, 0, 2);
             }
-            else{
+            else if(asteroid2.y == 116){
                 if(asteroid2.x != 0){
                     a2Cooldown = 0;
                     earthHealth = earthHealth - 5;
                     updateWin(0);
                     asteroid2.x = 0;
                     asteroid2.y = 0;
+                    earthHit =1;
                     moveSprites(&asteroid2, 0, 0);
                 }
             }
@@ -541,6 +648,20 @@ void playGame(){
             }
         }
 
+        checkCollisions(&maverick, &asteroid1, &a1Cooldown);
+        checkCollisions(&maverick, &asteroid2, &a2Cooldown);
+        checkCollisions(&shot1, &asteroid1, &a1Cooldown);
+        checkCollisions(&shot1, &asteroid2, &a2Cooldown);
+        checkCollisions(&shot2, &asteroid1, &a1Cooldown);
+        checkCollisions(&shot2, &asteroid2, &a2Cooldown);
+        checkCollisions(&missile, &asteroid1, &a1Cooldown);
+        checkCollisions(&missile, &asteroid2, &a2Cooldown);
+
+        if(lostLife == 1){
+            updateWin(1);
+            lostLife = 0;
+        }
+
         if(currScore >= 500 && currScore < 1000){
             asteroid2.speed = 2;
         }
@@ -548,12 +669,20 @@ void playGame(){
             asteroid1.speed = 2;
         }
         if(currScore >= 2500 && currScore < 5000){
-            asteroid2.speed = 3;
+            asteroid2.speed = 1;
         }
         if(currScore >= 5000){
-            asteroid1.speed = 3;
+            asteroid1.speed = 1;
         }
 
+        if(earthHit == 1 && earthHealth > 0 && earthHealth < 100){
+            earthquake(0, &earthHit);
+        }
+        else if(earthHit == 1 && (earthHealth > 100 || earthHealth == 0)){
+            earthquake(1, &earthHit);
+        }
+
+        clock++;
         performanceDelay(2);
     }
 

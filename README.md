@@ -6,7 +6,7 @@ a revived version of the original GBDK. The game is designed to be fully playabl
 GameBoy hardware, as well as on the GameBoy Advance and emulators, such as BGB.
 
 ## Features
-- Features 8-bit shounds that bring auditory feedback to in-game actions.
+- Features 8-bit sounds that bring auditory feedback to in-game actions.
 - Gameplay featuring a detailed and clear GUI while in the game.
 - Randomly spawned asteroids that increase in speed as the score increases.
 - A detailed results screen which includes a High-Score, most recent score, and the number of plays since
