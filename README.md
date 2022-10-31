@@ -32,3 +32,5 @@ Note: Many of the tutorials are for the old version of GBDK, for a breif overvie
 
 The emulator I recommend for testing the functionality of GameBoy games is BGB because of its variety of options, such as the VRAM Viewer:
 https://bgb.bircd.org/
+
+For Mac users, OpenEmu is often recommended for emulation and can be found here: https://openemu.org/
