@@ -596,9 +596,9 @@ void playGame(){
         }
         if(a1Cooldown == 30){
             if(asteroid1.x == 0){
-                asteroid1.x = (rand()%148)+8;
+                asteroid1.x = (rand()%144)+8;
             }
-            else if(asteroid1.x != 0 && asteroid1.y < 116 && clock % asteroid2.speed == 0){
+            else if(asteroid1.x != 0 && asteroid1.y < 116 && clock % asteroid1.speed == 0){
                 moveSprites(&asteroid1, 0, 2);
             }
             else if(asteroid1.y == 116){
@@ -616,7 +616,7 @@ void playGame(){
         }
         if(a2Cooldown == 50){
             if(asteroid2.x == 0 && asteroid1.y >= 40){
-                uint8_t spawn = (rand()%148)+8;
+                uint8_t spawn = (rand()%144)+8;
                 if(spawn > asteroid1.x + 24 || spawn < asteroid1.x - 8){
                     asteroid2.x = spawn;
                 }
