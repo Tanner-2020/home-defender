@@ -5,7 +5,7 @@
  * Purpose : Create a functional GameBoy game with the capability to run   *
  * on original hardware.                                                   *
  *                                                                         *
- * Version : 3.0, Started 10/14/2022                                       *
+ * Version : 1.0, Started 10/14/2022                                       *
  *                                                                         *
  * Author : Tanner Hall                                                    *
  *                                                                         *
@@ -32,8 +32,10 @@
 
 // Global Variables
 uint8_t numplays;
-uint8_t hiScore;
-uint8_t currScore;
+uint8_t life;
+uint8_t earthHealth;
+uint16_t hiScore;
+uint16_t currScore;
 
 // Sprites
 sprite maverick;
@@ -98,6 +100,37 @@ void setUpSprites(){
     missile.hp = 3;
     missile.speed = 2;
 
+    // Asteroid 1
+    set_sprite_tile(10, 12);
+    asteroid1.spriteIDs[0] = 10;
+    set_sprite_tile(11, 13);
+    asteroid1.spriteIDs[1] = 11;
+    set_sprite_tile(12, 14);
+    asteroid1.spriteIDs[2] = 12;
+    set_sprite_tile(13, 15);
+    asteroid1.spriteIDs[3] = 13;
+    asteroid1.x = 0;
+    asteroid1.y = 0;
+    asteroid1.width = 16;
+    asteroid1.height = 16;
+    asteroid1.hp = 3;
+    asteroid1.speed = 1;
+
+    // Asteroid 2
+    set_sprite_tile(14, 16);
+    asteroid2.spriteIDs[0] = 14;
+    set_sprite_tile(15, 17);
+    asteroid2.spriteIDs[1] = 15;
+    set_sprite_tile(16, 18);
+    asteroid2.spriteIDs[2] = 16;
+    set_sprite_tile(17, 19);
+    asteroid2.spriteIDs[3] = 17;
+    asteroid2.x = 0;
+    asteroid2.y = 0;
+    asteroid2.width = 16;
+    asteroid2.height = 16;
+    asteroid2.hp = 3;
+    asteroid2.speed = 1;
 }
 
 
@@ -137,6 +170,17 @@ void resetSprites(){
     missile.x = 0;
     missile.y = 0;
     moveSprites(&missile, 0, 0);
+
+    // Asteroid 1
+    asteroid1.x = 0;
+    asteroid1.y = 0;
+    moveSprites(&asteroid1, 0, 0);
+
+    // Asteroid 2
+    asteroid2.x = 0;
+    asteroid2.y = 0;
+    moveSprites(&asteroid2, 0, 0);
+
 }
 
 
@@ -273,6 +317,84 @@ void playSounds(uint8_t soundVal){
 }
 
 
+void printScore(UBYTE isInGame, UBYTE isHighScore){
+    uint8_t currScoreKeeper[5];
+    uint16_t scoreKeeper;
+    uint16_t remainder;
+
+    if(isInGame == 1 || isHighScore != 1){
+        scoreKeeper = currScore;
+        currScoreKeeper[0] = 1 + (scoreKeeper/10000);
+        remainder = scoreKeeper - ((scoreKeeper/10000)*10000);
+        scoreKeeper = remainder;
+        currScoreKeeper[1] = 1 + (scoreKeeper/1000);
+        remainder = scoreKeeper - ((scoreKeeper/1000)*1000);
+        scoreKeeper = remainder;
+        currScoreKeeper[2] = 1 + (scoreKeeper/100);
+        remainder = scoreKeeper - ((scoreKeeper/100)*100);
+        scoreKeeper = remainder;
+        currScoreKeeper[3] = 1 + (scoreKeeper/10);
+        remainder = scoreKeeper - ((scoreKeeper/10)*10);
+        currScoreKeeper[4] = 1 + (currScore %10);
+
+        if(isInGame == 1){
+            set_win_tiles(15, 0, 5, 1, currScoreKeeper);
+        }
+        if(isHighScore != 1){
+            set_bkg_tiles(6, 10, 5, 1, currScoreKeeper);
+        }
+    }
+    else{
+        scoreKeeper = hiScore;
+        currScoreKeeper[0] = 1 + (scoreKeeper/10000);
+        remainder = scoreKeeper - ((scoreKeeper/10000)*10000);
+        scoreKeeper = remainder;
+        currScoreKeeper[1] = 1 + (scoreKeeper/1000);
+        remainder = scoreKeeper - ((scoreKeeper/1000)*1000);
+        scoreKeeper = remainder;
+        currScoreKeeper[2] = 1 + (scoreKeeper/100);
+        remainder = scoreKeeper - ((scoreKeeper/100)*100);
+        scoreKeeper = remainder;
+        currScoreKeeper[3] = 1 + (scoreKeeper/10);
+        remainder = scoreKeeper - ((scoreKeeper/10)*10);
+        currScoreKeeper[4] = 1 + (hiScore %10);
+        set_bkg_tiles(6, 6, 5, 1, currScoreKeeper);
+    }
+}
+
+
+void updateWin(UBYTE destroyed){
+    uint8_t health[3];
+    uint8_t playerLives[1];
+    uint16_t loop;
+    uint16_t remainder;
+
+    if(destroyed == 1){
+        life--;
+    }
+    if(life < 100){
+        playerLives[0] = 1 + life;
+        set_win_tiles(3, 0, 1, 1, playerLives);
+    }
+
+    if(earthHealth < 100){
+        health[0] = 1;
+        for(loop = 0; loop <= earthHealth + 5; loop += 10){
+            if(earthHealth % loop < 10){
+                health[1] = 1 + (loop/10);
+                if(earthHealth == 5){
+                    health[1] = 1;
+                }
+                remainder = earthHealth % loop;
+                health[2] = 1 + remainder;
+            }
+        }
+        set_win_tiles(6, 0, 3, 1, health);
+    }
+    printScore(1, 1);
+}
+
+
 void startScreen(){
     SHOW_BKG;
 
@@ -283,12 +405,15 @@ void startScreen(){
 
 
 void playGame(){
-    uint8_t earthHealth = 100;
+    earthHealth = 100;
     currScore = 0;
     UBYTE earthHit = 0;
     uint8_t blastDelay = 10;
     uint16_t missileDelay = 900;
-    uint8_t life = 3;
+    life = 3;
+    uint8_t a1Cooldown = 30;
+    uint8_t a2Cooldown = 50;
+    uint8_t difficulty = 0;
 
     //Specialized Fade Transition to Game (Includes background offset)
     fadeOut();
@@ -329,8 +454,11 @@ void playGame(){
                 playSounds(6);
             }
         }
-
-        // Temporary Test Function
+        if(joypad() & J_START){
+            performanceDelay(10);
+            waitpad(J_START);
+            performanceDelay(10);
+        }
         if(joypad() & J_SELECT){
             life = 4;
         }
@@ -359,17 +487,73 @@ void playGame(){
                 moveSprites(&missile, 0, 0);
             }
         }
+        if(a1Cooldown == 30){
+            if(asteroid1.x == 0){
+                asteroid1.x = (rand()%148)+8;
+            }
+            else if(asteroid1.x != 0 && asteroid1.y < 116){
+                moveSprites(&asteroid1, 0, asteroid1.speed);
+            }
+            else{
+                a1Cooldown = 0;
+                earthHealth = earthHealth - 5;
+                updateWin(0);
+                asteroid1.x = 0;
+                asteroid1.y = 0;
+                moveSprites(&asteroid1, 0, 0);
+            }
+        }
+        else{
+            a1Cooldown++;
+        }
+        if(a2Cooldown == 50){
+            if(asteroid2.x == 0 && asteroid1.y >= 40){
+                uint8_t spawn = (rand()%148)+8;
+                if(spawn > asteroid1.x + 24 || spawn < asteroid1.x - 8){
+                    asteroid2.x = spawn;
+                }
+            }
+            else if(asteroid2.x != 0 && asteroid2.y < 116){
+                moveSprites(&asteroid2, 0, asteroid2.speed);
+            }
+            else{
+                if(asteroid2.x != 0){
+                    a2Cooldown = 0;
+                    earthHealth = earthHealth - 5;
+                    updateWin(0);
+                    asteroid2.x = 0;
+                    asteroid2.y = 0;
+                    moveSprites(&asteroid2, 0, 0);
+                }
+            }
+        }
+        else{
+            a2Cooldown++;
+        }
 
         if(blastDelay < 10){
             blastDelay++;
         }
-
         if(missileDelay < 900){
             missileDelay++;
             if(missileDelay == 900){
                 playSounds(5);
             }
         }
+
+        if(currScore >= 500 && currScore < 1000){
+            asteroid2.speed = 2;
+        }
+        if(currScore >= 1000 && currScore < 2500){
+            asteroid1.speed = 2;
+        }
+        if(currScore >= 2500 && currScore < 5000){
+            asteroid2.speed = 3;
+        }
+        if(currScore >= 5000){
+            asteroid1.speed = 3;
+        }
+
         performanceDelay(2);
     }
 
@@ -390,8 +574,8 @@ void displayStats(){
     fadeOut();
     set_bkg_tiles(0, 0, 20, 18, stats_screen);
     move_bkg(0, 0);
-    //printScore(0, 0);
-    //printScore(0, 1);
+    printScore(0, 0);
+    printScore(0, 1);
 
     playsKeeper = numplays;
     numPlaysKeeper[0] = 1 + (playsKeeper/100);
@@ -418,7 +602,7 @@ void menuSelection(){
     uint8_t cursorPos;
     fadeTransition(98, bkg, menu_screen);
 
-    set_sprite_data(0, 19, sprites);
+    set_sprite_data(0, 20, sprites);
     set_sprite_tile(0, 1);
     move_sprite(0, 40, 48);
 
