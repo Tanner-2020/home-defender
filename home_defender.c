@@ -299,10 +299,7 @@ void playSounds(uint8_t soundVal){
     }
     if(soundVal == 7){
         // Sound for Asteroid Destruction within Game.
-        NR41_REG = 0x3f;
-        NR42_REG = 0xB6;
-        NR43_REG = 0x6A;
-        NR44_REG = 0xC0;
+        
     }
     if(soundVal == 8){
         // Sound for Asteroid Collision with Planet.
@@ -423,14 +420,14 @@ void checkCollisions(sprite *obj1, sprite *obj2, uint8_t *cooldown){
             if(obj1->height == 16 && obj1->width == 16){
                 currScore += 5;
                 obj2->hp = 0;
-                obj1->x = 0;
+                obj1->x = 80;
                 lostLife = 1;
-                moveSprites(obj1, 80, 100);
+                playSounds(9);
+                moveSprites(obj1, 0, 0);
                 updateWin(0);
             }
             
             if(obj2->hp == 0){
-                playSounds(7);
                 *cooldown = 0;
                 obj2->x = 0;
                 obj2->y = 0;
