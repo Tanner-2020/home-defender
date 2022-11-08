@@ -615,7 +615,7 @@ void playGame(){
             a1Cooldown++;
         }
         if(a2Cooldown == 50){
-            if(asteroid2.x == 0 && asteroid1.y >= 40){
+            if(asteroid2.x == 0 && asteroid1.y >= 24){
                 uint8_t spawn = (rand()%144)+8;
                 if(spawn > asteroid1.x + 24 || spawn < asteroid1.x - 8){
                     asteroid2.x = spawn;
